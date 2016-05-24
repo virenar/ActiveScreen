@@ -23,4 +23,4 @@ Use the pickle object as input.
 ## Returns
 Plot showing different strategies %(hits discovered) vs %(compounds tested)
 
-![alt text](https://github.com/virenar/active_screening/blob/master/active_compound_screen.png)
+![alt text](https://github.com/virenar/active_screening/blob/master/performance_active_learner_comparision.png)
