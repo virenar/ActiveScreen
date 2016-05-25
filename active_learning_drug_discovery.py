@@ -170,7 +170,7 @@ def plot_model_comparision(random_tup1, max_entropy_tup2, max_prob_tup3, optimal
 print "Loading pickle data object"
 #data = pd.read_csv(sys.argv[1])
 #data.to_pickle("drug_discovery_data")
-data = pd.read_pickle("drug_discovery_data")
+data = pd.read_pickle(sys.argv[1])
 
 
 random_tup1 = get_model_performance(data, 5, get_random_indices, 0)
