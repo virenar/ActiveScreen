@@ -11,7 +11,7 @@ def get_features_and_responses(data):
     #return x, y = features, response
     x = data[data.columns[1:]]
     y = []
-    for i in data['I']:
+    for i in data['?']:
         if i == "I":
             y.append((1,0))
         else:
@@ -26,19 +26,20 @@ def get_model_performance(data, batch_size, strategy, seed):
     x_train, x_test, y_train, y_test, indices_train, indices_test = train_test_split(x,y,range(data.shape[0]), test_size=1-(float(batch_size)/100), random_state = seed)
 
     print "Starting iterations:"
+    total_test_space = data.shape[0]*(1-(float(batch_size)/100))
     picks = (batch_size * data.shape[0])/100 #number of picks of small molecules at each iteration
     hits = len([item for item in y_train if item[1] == 1]) #hits stores number of hits for each iteraction
     total_hits = len([item for item in y if item[1] == 1]) #total small molecules hits for a given target
-    result = [] #tuple that stores %discovered hits and %chemical space tested during each iteration
+    result = []
+    #measure performance
+    percent_chemical_space = int(100-(float(len(indices_test))/total_test_space)*100)
+    percent_hits = (hits*100)/total_hits
+    result.append([percent_chemical_space,percent_hits])
     itr = 1
-    for i in range(0,100/batch_size):
-        indices_train, indices_test, hits = active_learning(x_train, y_train, x_test, y_test, indices_train, indices_test, strategy, picks,seed, total_hits, hits)
+    print "Iterations: ", itr, strategy.__name__, "|Percent chemical space: ", percent_chemical_space, "|Percent hits: ", percent_hits, "|hits: ", hits
 
-        #measure performance
-        percent_chemical_space = i*batch_size
-        percent_hits = (hits*100)/total_hits
-        result.append([percent_chemical_space,percent_hits])
-        print "Iterations: ", itr, strategy.__name__, "|Percent chemical space: ", percent_chemical_space, "|Percent hits: ", percent_hits, "|hits: ", hits
+    while len(indices_test) > 0:
+        indices_train, indices_test = active_learning(x_train, y_train, x_test, y_test, indices_train, indices_test, strategy, picks,seed)
 
         #new x_train, y_train, and x_test
         x_train = x.ix[indices_train]
@@ -46,11 +47,18 @@ def get_model_performance(data, batch_size, strategy, seed):
         x_test = x.ix[indices_test]
         y_test = [y[item] for item in indices_test]
         picks = min(len(y_test), picks)
+        hits = len([item for item in y_train if item[1] == 1])
         itr += 1
+        #measure performance
+        percent_chemical_space = int(100-(float(len(indices_test))/total_test_space)*100)
+        percent_hits = (hits*100)/total_hits
+        result.append([percent_chemical_space,percent_hits])
+        print "Iterations: ", itr, strategy.__name__, "|Percent chemical space: ", percent_chemical_space, "|Percent hits: ", percent_hits, "|hits: ", hits
+
     print "------"
     return result
 
-def active_learning(x_train,y_train,x_test, y_test, indices_train, indices_test, strategy, picks,seed, total_hits, hits):
+def active_learning(x_train,y_train,x_test, y_test, indices_train, indices_test, strategy, picks,seed):
     #return the indices of new train and test data according to strategy
     if strategy.__name__ == "get_optimal_sorted_indices":
         indices_picked = get_optimal_sorted_indices(y_test, indices_test)[:picks]
@@ -68,7 +76,7 @@ def active_learning(x_train,y_train,x_test, y_test, indices_train, indices_test,
     hits = len([item for item in y_train if item[1] == 1])
     indices_test = [item for item in indices_test if item not in indices_picked]
     indices_train.extend(indices_picked)
-    return indices_train, indices_test, hits
+    return indices_train, indices_test
 
 def get_random_indices(tuples, indices):
     #return indices of test_set with random shuffle
