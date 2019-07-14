@@ -1,5 +1,5 @@
 
-# Active screening
+# Active Screen
 
 The current approach in drug screening is to find active compounds by testing an entire chemical library space on a given target. However, the brute force approach takes a lot of time, resources, and does not learn from prior experiments. To overcome the problem, we can let machine learn the features of a small molecule from a subset of prior experiments that responded to the target. Then we can ask the machine to provide the next best small molecule that responds to the target. This approach drastically reduces the time and resources to search an active compound from an entire chemical space.
 
